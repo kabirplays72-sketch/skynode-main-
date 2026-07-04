@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#020605" />
+    <title>SkyNode-1 Mission Control</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+    <script src="extra.js" defer></script>
+  </head>
+  <body data-connection="offline" data-camera="offline">
+    <main class="dashboard-shell">
+      <header class="top-bar" aria-label="Mission status">
+        <section class="brand-panel">
+          <div>
+            <p class="kicker"></p>
+            <h1 class="brand-title">SKYNODE</h1>
+            <div class="mission-state">
+              <span class="pulse-dot"></span>
+              <span>MISSION ACTIVE</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="status-rack" aria-label="Flight status summary">
+          <article class="status-tile">
+            <span>GPS Status</span>
+            <strong id="gpsStatus">NO DATA</strong>
+            <small id="gpsMeta">-- SAT</small>
+          </article>
+          <article class="status-tile">
+            <span>Telemetry Status</span>
+            <strong id="telemetryStatus">DISCONNECTED</strong>
+            <small id="telemetryMeta">/telemetry</small>
+          </article>
+          <article class="status-tile">
+            <span>Altitude</span>
+            <strong><span id="headerAltitude">--</span> m</strong>
+            <small>AGL</small>
+          </article>
+          <article class="status-tile">
+            <span>Battery</span>
+            <strong><span id="headerBattery">--</span>%</strong>
+            <small id="batteryMeta">-- V</small>
+          </article>
+        </section>
+      </header>
+
+      <section class="mission-layout">
+        <section class="left-stack">
+          <section class="panel camera-panel" aria-label="Live camera">
+            <div class="panel-title">
+              <div>
+                <span class="kicker">Payload Video / MJPEG</span>
+                <h2>Live Camera</h2>
+              </div>
+              <div class="hud-readouts">
+                <span class="live-pill"><i></i><b id="cameraStatus">RECONNECTING</b></span>
+                <span id="feedFps">FPS --</span>
+                <span id="feedSignal">SIG --%</span>
+                <button id="camZoomOut" class="icon-button" type="button" aria-label="Zoom out">−</button>
+                <button id="camZoomIn" class="icon-button" type="button" aria-label="Zoom in">+</button>
+                <button id="camInvert" class="icon-button" type="button" aria-label="Invert camera">INVERT</button>
+              </div>
+            </div>
+
+            <div class="video-shell" id="videoShell">
+              <img id="videoFeed" src="/video_feed" alt="SkyNode live camera feed" />
+              <div class="video-grid" aria-hidden="true"></div>
+              <div class="corner corner-tl"></div>
+              <div class="corner corner-tr"></div>
+              <div class="corner corner-bl"></div>
+              <div class="corner corner-br"></div>
+
+              <div class="hud-box hud-top-left">
+                <span>UTC</span>
+                <strong id="videoTimestamp">--:--:--</strong>
+              </div>
+              <div class="hud-box hud-top-right">
+                <span>Stream</span>
+                <strong id="streamEndpoint">/video_feed</strong>
+              </div>
+              <div class="hud-box hud-bottom-left">
+                <span>Coordinates</span>
+                <strong id="payloadMeta">--, --</strong>
+              </div>
+              <div class="hud-box hud-bottom-right">
+                <span>Frame Sync</span>
+                <strong id="frameSync">WAITING</strong>
+              </div>
+
+              <div id="cameraWarning" class="signal-lost" role="status">
+                <strong>SIGNAL LOST</strong>
+                <span>RECONNECTING...</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel map-panel" aria-label="GPS map">
+            <div class="panel-title">
+              <div>
+                <span class="kicker">Navigation / GPS</span>
+                <h2>GPS Map</h2>
+              </div>
+              <div class="hud-readouts">
+                <span id="gpsLockIndicator">GPS WAIT</span>
+                <button id="centerMap" class="icon-button" type="button" aria-label="Auto-center GPS marker">CENTER</button>
+                <button id="spoofToggle" class="icon-button spoof-button" type="button" aria-label="Toggle backup spoof reading">SPOOF BACKUP</button>
+              </div>
+            </div>
+            <div id="gpsMap" class="gps-map" role="img" aria-label="Live GPS marker and path history"></div>
+          </section>
+        </section>
+
+        <aside class="right-sidebar" aria-label="Telemetry sidebar">
+          <section class="panel telemetry-card">
+            <div class="section-heading">
+              <h2>Position</h2>
+              <span id="positionHealth">GPS WAIT</span>
+            </div>
+            <div class="metric-grid">
+              <div class="metric"><span>Latitude</span><strong id="lat">--</strong></div>
+              <div class="metric"><span>Longitude</span><strong id="lon">--</strong></div>
+              <div class="metric"><span>Satellites</span><strong id="satellites">--</strong></div>
+              <div class="metric"><span>GPS Lock</span><strong id="fixQuality">NO DATA</strong></div>
+            </div>
+          </section>
+
+          <section class="panel telemetry-card">
+            <div class="section-heading">
+              <h2>Environment</h2>
+              <span>PAYLOAD BAY</span>
+            </div>
+            <div class="metric-grid">
+              <div class="metric"><span>Temperature</span><strong><span id="temperature">--</span> C</strong></div>
+              <div class="metric"><span>Humidity</span><strong><span id="humidity">--</span>%</strong></div>
+              <div class="metric"><span>Pressure</span><strong><span id="pressure">--</span> hPa</strong></div>
+              <div class="metric"><span>Altitude</span><strong><span id="altitude">--</span> m</strong></div>
+            </div>
+          </section>
+
+          <section class="panel telemetry-card orientation-card">
+            <div class="section-heading">
+              <h2>Orientation</h2>
+              <span>IMU</span>
+            </div>
+            <div class="orientation-layout">
+              <div class="horizon" aria-label="Artificial horizon">
+                <div id="horizonInner" class="horizon-inner">
+                  <div class="sky-band"></div>
+                  <div class="ground-band"></div>
+                  <div class="horizon-line"></div>
+                  <div class="pitch-line pitch-plus">+10</div>
+                  <div class="pitch-line pitch-minus">-10</div>
+                </div>
+                <div class="aircraft-reticle"></div>
+              </div>
+              <div class="metric-stack">
+                <div class="metric compact"><span>Pitch</span><strong><span id="pitch">--</span> deg</strong></div>
+                <div class="metric compact"><span>Roll</span><strong><span id="roll">--</span> deg</strong></div>
+                <div class="metric compact"><span>Yaw</span><strong><span id="yaw">--</span> deg</strong></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel telemetry-card weather-card">
+            <div class="section-heading">
+              <h2>Weather Forecast</h2>
+              <span id="weatherHealth">MODEL WAIT</span>
+            </div>
+            <canvas id="weatherGraph" class="weather-graph" width="360" height="120" aria-label="Predicted weather trend graph"></canvas>
+            <div class="metric-grid power-grid">
+              <div class="metric compact"><span>Trend</span><strong id="weatherTrend">--</strong></div>
+              <div class="metric compact"><span>Outlook</span><strong id="weatherOutlook">ANALYZING</strong></div>
+              <div class="metric compact"><span>Confidence</span><strong id="weatherConfidence">--%</strong></div>
+              <div class="metric compact"><span>Source</span><strong id="weatherSource">LIVE</strong></div>
+            </div>
+          </section>
+
+          <section class="panel mission-card">
+            <div class="section-heading">
+              <h2>Mission</h2>
+              <span id="connectionStatus">DISCONNECTED</span>
+            </div>
+            <div class="mission-grid">
+              <div class="metric compact"><span>Mission Time</span><strong id="missionTime">--:--:--</strong></div>
+              <div class="metric compact"><span>Packet Count</span><strong id="packetCount">--</strong></div>
+              <div class="metric compact"><span>Signal</span><strong id="signalStrength">--%</strong></div>
+              <div class="metric compact"><span>Last Update</span><strong id="lastUpdate">--:--:--</strong></div>
+            </div>
+            <div id="systemLog" class="log-window" aria-label="Scrolling event log"></div>
+          </section>
+        </aside>
+      </section>
+
+      <footer class="bottom-bar" aria-label="Ground station status">
+        <div><span>Latency</span><strong id="latency">-- ms</strong></div>
+        <div><span>Packet Count</span><strong id="footerPackets">--</strong></div>
+        <div><span>Signal</span><strong id="footerSignal">--%</strong></div>
+        <div><span>Firmware</span><strong id="firmware">--</strong></div>
+        <div><span>Raspberry Pi</span><strong id="piStatus">DISCONNECTED</strong></div>
+        <div><span>ESP32</span><strong id="espStatus">NO DATA</strong></div>
+        <div><span>Camera</span><strong id="cameraFooter">RECONNECTING</strong></div>
+        <button id="fullscreenToggle" class="fullscreen-button" type="button">FULLSCREEN</button>
+      </footer>
+    </main>
+  </body>
+</html>
